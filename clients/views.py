@@ -50,8 +50,7 @@ class ProjectCreateView(generics.CreateAPIView):
         project.users.set(serializer.validated_data['users'])
         project.save()
 
-        # You also need to return a response after creating the object.
-        # This is a good way to do it:
+        
         return Response(ProjectSerializer(project).data, status=status.HTTP_201_CREATED)
         
     def get_serializer_context(self):
