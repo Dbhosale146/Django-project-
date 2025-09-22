@@ -9,22 +9,6 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['id', 'name']
     
 
-class ProjectSerializer(serializers.ModelSerializer):
-    users = UserSerializer(many=True, read_only=True)
-    created_by = serializers.CharField(source='created_by.username', read_only=True)
-    client=serializers.CharField(source='client.client_name',read_only=True)
-    created_at = serializers.SerializerMethodField()
-    
-    
-    class Meta:
-        model = Project
-        fields = ['id', 'project_name','client','users','created_at','created_by']
-    
-    def get_created_at(self, obj):
-        # This will returns: "2019-12-24T11:03:55.931739+05:30"
-        return localtime(obj.created_at).astimezone().isoformat()
-
-
 class GetAllProjects(serializers.ModelSerializer):
 
   
@@ -43,13 +27,31 @@ class GetAllProjects(serializers.ModelSerializer):
         return localtime(obj.created_at).astimezone().isoformat()
 
   
-
 class ProjectCreateSerializer(serializers.ModelSerializer):
     users = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), many=True)
 
     class Meta:
         model = Project
         fields = ['project_name', 'users']
+
+
+class ProjectSerializer(serializers.ModelSerializer):
+    users = UserSerializer(many=True, read_only=True)
+    created_by = serializers.CharField(source='created_by.username', read_only=True)
+    client=serializers.CharField(source='client.client_name',read_only=True)
+    created_at = serializers.SerializerMethodField()
+    
+    
+    class Meta:
+        model = Project
+        fields = ['id', 'project_name','client','users','created_at','created_by']
+    
+    def get_created_at(self, obj):
+        # This will returns: "2019-12-24T11:03:55.931739+05:30"
+        return localtime(obj.created_at).astimezone().isoformat()
+
+
+
 
 class ClientSerializer(serializers.ModelSerializer):
     created_by = serializers.CharField(source='created_by.username', read_only=True)

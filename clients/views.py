@@ -10,17 +10,13 @@ from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.reverse import reverse
 
-class ClientListCreateView(generics.ListCreateAPIView):
-
-    queryset = Client.objects.all()
-
-    def get_serializer_class(self):
-        if self.request.method == 'POST':
-            return ClientSerializer
-        return ClientSerializer
-
-    def perform_create(self, serializer):
-        serializer.save(created_by=self.request.user)
+class APIRootView(APIView):
+    def get(self, request, format=None):
+        return Response({
+            'clients': reverse('clients', request=request, format=format),
+            'projects': reverse('user-projects', request=request, format=format)
+        })
+    
 
 class ClientDetailView(generics.RetrieveUpdateDestroyAPIView):
  
@@ -37,6 +33,15 @@ class ClientDetailView(generics.RetrieveUpdateDestroyAPIView):
     def perform_update(self, serializer):
         serializer.save(updated_at=timezone.now())
 
+
+class UserProjectsView(generics.ListAPIView):
+    authentication_classes = [BasicAuthentication]
+    permission_classes = [IsAuthenticated]
+    serializer_class = GetAllProjects
+
+    def get_queryset(self):
+        return self.request.user.projects.all()
+    
 class ProjectCreateView(generics.CreateAPIView):
     # Add this line to specify the serializer
     serializer_class = ProjectCreateSerializer
@@ -63,17 +68,15 @@ class ProjectCreateView(generics.CreateAPIView):
         context['client'] = client
         return context
 
-class UserProjectsView(generics.ListAPIView):
-    authentication_classes = [BasicAuthentication]
-    permission_classes = [IsAuthenticated]
-    serializer_class = GetAllProjects
 
-    def get_queryset(self):
-        return self.request.user.projects.all()
-    
-class APIRootView(APIView):
-    def get(self, request, format=None):
-        return Response({
-            'clients': reverse('clients', request=request, format=format),
-            'projects': reverse('user-projects', request=request, format=format)
-        })
+class ClientListCreateView(generics.ListCreateAPIView):
+
+    queryset = Client.objects.all()
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return ClientSerializer
+        return ClientSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
