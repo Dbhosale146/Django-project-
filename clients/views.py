@@ -6,6 +6,10 @@ from .serializers import *
 from django.utils import timezone
 from rest_framework.authentication import BasicAuthentication
 from django.shortcuts import get_object_or_404
+
+from rest_framework.views import APIView
+from rest_framework.reverse import reverse
+
 class ClientListCreateView(generics.ListCreateAPIView):
 
     queryset = Client.objects.all()
@@ -66,3 +70,10 @@ class UserProjectsView(generics.ListAPIView):
 
     def get_queryset(self):
         return self.request.user.projects.all()
+    
+class APIRootView(APIView):
+    def get(self, request, format=None):
+        return Response({
+            'clients': reverse('clients', request=request, format=format),
+            'projects': reverse('user-projects', request=request, format=format)
+        })
